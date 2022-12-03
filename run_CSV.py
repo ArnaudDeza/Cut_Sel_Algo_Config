@@ -9,8 +9,9 @@ from presolve import presolve_instance
 import parameters
 import numpy as np
 import argparse
+import pandas as pd
 
-from utilities import save_default_cut_selector_param_npy_file,get_filename
+from utilities import get_filename
 from scip_solve import run_instance
 def run_pre_solve_instances(instances, instance_paths, sol_paths, rand_seeds, transformed_problem_dir, outfile_dir,
                         temp_dir, use_miplib_sols):
@@ -90,8 +91,24 @@ def run_solve_and_get_solution_files(data_dir, temp_dir, outfile_dir, instances,
             os.rename(sol_path, new_sol_path)
 
 
+def save_grid_Cut_selec_param(temp_dir, instance, rand_seed,dict_):
+    """
+    Creates a npy file for the default cut-selector parameter values
+    Args:
+        temp_dir (dir): Directory where we will dump the npy file
+        instance (str): The name of the instance
+        rand_seed (int): The random seed of the solve
+    Returns: Nothing, just creates a file
+    """
+    cut_selector_params = dict_[instance]
 
-def run_scip_and_get_yml_and_log_files(data_dir, temp_dir, outfile_dir, instances, rand_seeds, root=True):
+    cut_selector_params = np.array(cut_selector_params)
+    #cut_selector_params = np.array([0.0, 1.0, 0.1, 0.1])
+    file_name = get_filename(temp_dir, instance, rand_seed, trans=True, root=False, sample_i=0, ext='npy')
+    np.save(file_name, cut_selector_params)
+
+    return
+def run_scip_and_get_yml_and_log_files(data_dir, temp_dir, outfile_dir, instances, rand_seeds, root=True,dict_ = None):
     """
     It solves a run for all instance and random seed combinations. It then creates a YML file on the statistics,
     a .stats file containing the SCIP output of the statistics, and a .log file containing the log output of the run.
@@ -113,11 +130,15 @@ def run_scip_and_get_yml_and_log_files(data_dir, temp_dir, outfile_dir, instance
     # Change the outfile directory for this set of runs
     outfile_sub_dir_name = 'root_solve' if root else 'full_solve'
     outfile_dir = os.path.join(outfile_dir, outfile_sub_dir_name)
-    os.mkdir(outfile_dir)
+    try:
+        os.mkdir(outfile_dir)
+    except:
+        pass
     # Start all the individual jobs that solve and instance and a random seed
     for instance in instances:
         for rand_seed in rand_seeds:
-            save_default_cut_selector_param_npy_file(temp_dir, instance, rand_seed)
+
+            save_grid_Cut_selec_param(temp_dir, instance, rand_seed,dict_)
             mps_file = get_filename(data_dir, instance, rand_seed, trans=True, root=False, sample_i=None, ext='mps')
             run_instance(temp_dir, mps_file, instance, rand_seed,0,time_limit, root, False, True)
     # Now move the files we created for the non-problematic instances
@@ -151,6 +172,7 @@ if __name__ == "__main__":
     parser.add_argument('temp_dir', type=str)
     parser.add_argument('outfile_dir', type=str)
     parser.add_argument('num_rand_seeds', type=int)
+    #parser.add_argument('csv_path', type=str,default="../data/table_page_24.csv")
     args = parser.parse_args()
 
 
@@ -158,7 +180,6 @@ if __name__ == "__main__":
     instance_names = []
     instance_file_paths = []
     sol_file_paths = []
-
     sol_files = os.listdir(args.solution_dir)
     for file in os.listdir(args.problem_dir):
         # Extract the instance
@@ -169,9 +190,7 @@ if __name__ == "__main__":
         sol_file = instance_name + '.sol.gz'
         assert sol_file in sol_files, 'sol_file {} not found'.format(sol_file)
         sol_file_paths.append(os.path.join(args.solution_dir, sol_file))
-
-
-
+    
     # Initialise the random seeds
     random_seeds = [random_seed for random_seed in range(1, args.num_rand_seeds + 1)]
 
@@ -187,11 +206,24 @@ if __name__ == "__main__":
         run_solve_and_get_solution_files(args.transformed_problem_dir, args.temp_dir,
                                                            args.outfile_dir, instance_names, random_seeds)'''
         
+    
+    #df = pd.read_csv(args.csv_path)
+    df = pd.read_csv("/home/arnaud/Documents/mie1666/MIE-1666-Project/data/table_page_21.csv")
+    instance_names_ = df['Instance'].tolist()
+    lambda_1s = df['lambda2'].tolist()
+    lambda_2s = df['lambda1'].tolist()
+    lambda_3s = df['lambda3'].tolist()
+    lambda_4s = df['lambda4'].tolist()
+    
+    cut_params_dict = {}
+    for i,inst in enumerate(instance_names_):
+        cut_params_dict[inst] = [lambda_1s[i],lambda_2s[i],lambda_3s[i],lambda_4s[i]]
+
 
     # We now produce YML files containing solve information for our root-node restricted solves.
     print('Producing root-node restricted solve statistics in YML files', flush=True)
     run_scip_and_get_yml_and_log_files(args.transformed_problem_dir, args.temp_dir, args.outfile_dir,
-                                                          instance_names, random_seeds, root = True)
+                                                          instance_names, random_seeds, root = True,dict_=cut_params_dict)
  
 
 

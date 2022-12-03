@@ -5,11 +5,8 @@ import os
 import numpy as np
 import argparse
 from pyscipopt import Model, quicksum, SCIP_RESULT, SCIP_PARAMSETTING, Branchrule, SCIP_PRESOLTIMING, SCIP_PROPTIMING
-from ConstraintHandler.ConstraintHandler import RepeatSepaConshdlr
-from CutSelectors.FixedAmountCutsel import FixedAmountCutsel
 import parameters
-
-
+from utilities import FixedAmountCutsel,RepeatSepaConshdlr
 def build_scip_model(instance_path, node_lim, rand_seed, pre_solve, propagation, separators, heuristics,
                      aggressive_sep, dummy_branch_rule, time_limit=None, sol_path=None,
                      dir_cut_off=0.0, efficacy=1.0, int_support=0.1, obj_parallelism=0.1):
@@ -267,7 +264,7 @@ def run_instance(temp_dir, instance_path, instance, rand_seed, sample_i, time_li
 
     # Print out the cut-sel param values to the slurm .out file
     print('DIR: {}, EFF: {}, INT: {}, OBJ: {}'.format(dir_cut_off, efficacy, int_support, obj_parallelism), flush=True)
-
+    
     # Build the initial SCIP model for the instance
     time_limit = None if time_limit < 0 else time_limit
     node_lim = 1 if root else -1
@@ -346,7 +343,10 @@ def solve_model_and_extract_solve_info(scip, dir_cut_off, efficacy, int_support,
     if len(scip.getSols()) > 0 and print_sol:
         sol = scip.getBestSol()
         sol_file = get_filename(temp_dir, instance, rand_seed, trans=True, root=False, sample_i=None, ext='sol')
-        scip.writeSol(sol, sol_file)
+       
+        try:
+            scip.writeSol(sol, sol_file)
+        except:pass
 
     # Get the percentage of integer variables with fractional values. This includes implicit integer variables
     scip_vars = scip.getVars()
@@ -369,7 +369,10 @@ def solve_model_and_extract_solve_info(scip, dir_cut_off, efficacy, int_support,
     # Get the primal dual integral. This is not really needed for root solves, but might be important to have
     # It is only accessible through the solver statistics. TODO: Write a wrapper function for this
     stat_file = get_filename(temp_dir, instance, rand_seed, trans=True, root=root, sample_i=sample_i, ext='stats')
-    scip.writeStatistics(stat_file)
+    try:
+        scip.writeStatistics(stat_file)
+    except:
+        pass
     with open(stat_file) as s:
         stats = s.readlines()
     # TODO: Make this safer to access.

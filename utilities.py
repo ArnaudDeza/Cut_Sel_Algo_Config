@@ -5,8 +5,6 @@ import shutil
 import logging
 import argparse
 from pyscipopt import Model, quicksum, SCIP_RESULT, SCIP_PARAMSETTING, Branchrule, SCIP_PRESOLTIMING, SCIP_PROPTIMING
-from ConstraintHandler.ConstraintHandler import RepeatSepaConshdlr
-from CutSelectors.FixedAmountCutsel import FixedAmountCutsel
 import parameters
 from pyscipopt import Model, quicksum, SCIP_RESULT, SCIP_PARAMSETTING
 from pyscipopt.scip import Cutsel
