@@ -140,10 +140,14 @@ def run_scip_and_get_yml_and_log_files(data_dir, temp_dir, outfile_dir, instance
 
             save_grid_Cut_selec_param(temp_dir, instance, rand_seed,dict_)
             mps_file = get_filename(data_dir, instance, rand_seed, trans=True, root=False, sample_i=None, ext='mps')
-            run_instance(temp_dir, mps_file, instance, rand_seed,0,time_limit, root, False, True)
+            try:
+              run_instance(temp_dir, mps_file, instance, rand_seed,0,time_limit, root, False, True)
+            except:
+              pass
     # Now move the files we created for the non-problematic instances
     for instance in instances:
         for rand_seed in rand_seeds:
+          try:
             # First do the YAML file
             yml_file = get_filename(temp_dir, instance, rand_seed, trans=True, root=root, sample_i=0, ext='yml')
             new_yml_file = get_filename(data_dir, instance, rand_seed, trans=True, root=root, sample_i=None, ext='yml')
@@ -161,6 +165,8 @@ def run_scip_and_get_yml_and_log_files(data_dir, temp_dir, outfile_dir, instance
             new_path = get_filename(data_dir, instance, rand_seed, trans=True, root=root, sample_i=None, ext='stats')
             assert os.path.isfile(stats_path) and not os.path.isfile(new_path)
             os.rename(stats_path, new_path)
+          except:
+            pass
     return
 
 
