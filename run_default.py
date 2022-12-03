@@ -119,27 +119,33 @@ def run_scip_and_get_yml_and_log_files(data_dir, temp_dir, outfile_dir, instance
         for rand_seed in rand_seeds:
             save_default_cut_selector_param_npy_file(temp_dir, instance, rand_seed)
             mps_file = get_filename(data_dir, instance, rand_seed, trans=True, root=False, sample_i=None, ext='mps')
-            run_instance(temp_dir, mps_file, instance, rand_seed,0,time_limit, root, False, True)
+            try:
+              run_instance(temp_dir, mps_file, instance, rand_seed,0,time_limit, root, False, True)
+            except:pass
     # Now move the files we created for the non-problematic instances
     for instance in instances:
-        for rand_seed in rand_seeds:
-            # First do the YAML file
-            yml_file = get_filename(temp_dir, instance, rand_seed, trans=True, root=root, sample_i=0, ext='yml')
-            new_yml_file = get_filename(data_dir, instance, rand_seed, trans=True, root=root, sample_i=None, ext='yml')
-            assert os.path.isfile(yml_file) and not os.path.isfile(new_yml_file)
-            os.rename(yml_file, new_yml_file)
+          for rand_seed in rand_seeds:
+              try:
+                # First do the YAML file
+                yml_file = get_filename(temp_dir, instance, rand_seed, trans=True, root=root, sample_i=0, ext='yml')
+                new_yml_file = get_filename(data_dir, instance, rand_seed, trans=True, root=root, sample_i=None, ext='yml')
+                assert os.path.isfile(yml_file) and not os.path.isfile(new_yml_file)
+                os.rename(yml_file, new_yml_file)
 
-            ''' # Now do the log file
-            out_file = get_slurm_output_file(outfile_dir, instance, rand_seed)
-            new_out_file = get_filename(data_dir, instance, rand_seed, trans=True, root=root, sample_i=None, ext='log')
-            assert os.path.isfile(out_file) and not os.path.isfile(new_out_file)
-            os.rename(out_file, new_out_file)'''
+                ''' # Now do the log file
+                out_file = get_slurm_output_file(outfile_dir, instance, rand_seed)
+                new_out_file = get_filename(data_dir, instance, rand_seed, trans=True, root=root, sample_i=None, ext='log')
+                assert os.path.isfile(out_file) and not os.path.isfile(new_out_file)
+                os.rename(out_file, new_out_file)'''
 
-            # Now do the stats file
-            stats_path = get_filename(temp_dir, instance, rand_seed, trans=True, root=root, sample_i=0, ext='stats')
-            new_path = get_filename(data_dir, instance, rand_seed, trans=True, root=root, sample_i=None, ext='stats')
-            assert os.path.isfile(stats_path) and not os.path.isfile(new_path)
-            os.rename(stats_path, new_path)
+                # Now do the stats file
+                stats_path = get_filename(temp_dir, instance, rand_seed, trans=True, root=root, sample_i=0, ext='stats')
+                new_path = get_filename(data_dir, instance, rand_seed, trans=True, root=root, sample_i=None, ext='stats')
+                assert os.path.isfile(stats_path) and not os.path.isfile(new_path)
+                os.rename(stats_path, new_path)
+              except:
+                  pass
+    
     return
 
 
