@@ -147,7 +147,36 @@ def partitioned_runner(file_name,num_splits,num_config_calls):
     results.append(simple_smac_runner(train, test,num_config_calls = num_config_calls))
   return pd.concat(results)
 
+def One_instance_runner(file_name,num_config_calls):
+  results =[]
+  df = pd.read_csv(file_name)
+  names = df['NAME'].tolist()
+  for name in names:
+    results.append(one_smac_runner(name,num_config_calls = num_config_calls))
+  return pd.concat(results)
+def evaluation_unique(params,train_df,name,gap_tolerance = 0.0002):
+  lambda1 = params['lambda1']
+  lambda2 = params['lambda2']
+  lambda3 = params['lambda3']
+  lambda4 = params['lambda4']
+  scores = []
+  df_default = train_df.loc[train_df['NAME'] == name]
+  def_gap,def_runtime = df_default['gap'],df_default['SOLUTION TIME']
+  for rand_seed in [1,2,3]:
+    runtime, mip_gap = solve_instance(name, 20,rand_seed,lambda1, lambda2, lambda3, lambda4,root = False)
 
+    if mip_gap < gap_tolerance: ## If Solved, Score the runtime
+            imp = float((def_runtime - runtime)) / (np.abs(def_runtime) + 1e-8)
+            imp = -1*imp
+            scores.append(imp)
+            print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
+    else:  ## If not solved, score the MIP relative imrovment
+            imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
+            imp = -1*imp
+            scores.append(imp)
+            print("\n name {} gap imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,mip_gap,def_gap))
+  print("Done 1 SMAC evaluation")
+  return np.mean(scores)
 
 # folder where yml files will be store
 temp_dir = "/home/arnaud/Documents/mie1666/new_ACS/smac_runs/experiment"
