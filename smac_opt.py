@@ -292,14 +292,29 @@ except:pass
 try: os.mkdir(temp_dir)
 except:pass
 
-df = hetero_runner("/home/arnaud/Documents/mie1666/new_ACS/df_default.csv",num_splits = 2,num_config_calls = 1)
-df.to_pickle("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/hetero_.pkl")
-df.to_csv("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/hetero_.csv")
+partioned = True
+hetero = False
+single = False
+
+### Partitioned
+if partioned == True:
+    df = partitioned_runner("/home/arnaud/Documents/mie1666/new_ACS/df_default.csv",num_splits = 5,num_config_calls = 30)
+    df.to_pickle("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/hetero_.pkl")
+    df.to_csv("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/hetero_.csv")
 
 
-'''df = One_instance_runner("/home/arnaud/Documents/mie1666/new_ACS/df_default.csv",num_config_calls = 2)
-df.to_pickle("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/smac_run.pkl")
-df.to_csv("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/smac_run.csv")'''
+### Heterogeneous
+if hetero == True:
+    df = hetero_runner("/home/arnaud/Documents/mie1666/new_ACS/df_default.csv",num_splits = 5,num_config_calls = 85)
+    df.to_pickle("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/hetero_.pkl")
+    df.to_csv("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/hetero_.csv")
+   
+
+### Single 1 run
+if single == True:
+    df = One_instance_runner("/home/arnaud/Documents/mie1666/new_ACS/df_default.csv",num_config_calls = 100)
+    df.to_pickle("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/hetero_.pkl")
+    df.to_csv("/home/arnaud/Documents/mie1666/new_ACS/smac_1_instance/hetero_.csv")
 
 
 
