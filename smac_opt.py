@@ -43,42 +43,45 @@ def evaluation_unique(params,train_df,name,gap_tolerance = 0.0002):
   def_status= df_default['status'].tolist()[0]
   def_runtime =df_default['SOLUTION TIME'].tolist()[0]
   for rand_seed in [1,2,3]:
-      runtime, mip_gap,status = solve_instance(name, def_runtime,rand_seed,lambda1, lambda2, lambda3, lambda4,root = True)
-      if status == "timelimit": # if hit the default time limit then compare gap
-        if mip_gap < gap_tolerance:   #solved to optimality in default runtime --> good confugration
-          imp = -0.1
-          reward_type = "time_limit_default"
-        else:       # did not solve to optimality
-              imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
-              imp = -1*imp
-              reward_type = "gap"
-              
-      if status == "optimal":   # SMAC solved to optimality
-        if def_status == "optimal":    # default solved to optimality as well
-              imp = float((def_runtime - runtime)) / (np.abs(def_runtime) + 1e-8)
-              imp = -1*imp
-              reward_type = "time"
-        else:  # smac solved to optimality while default did not --> set to large negative value
-          imp = -1 + 1e-18
-          reward_type = "smac_opt_def_not"
-      if status == "nodelimit":
-              imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
-              imp = -1*imp
-              reward_type = "gap"
-      
-      if imp >= 0:
-        imp = -np.log(np.abs(imp+1))
-      else:
-        imp = np.log(np.abs(imp-1))
-      if reward_type == "gap":
-        print("\n name {} gap imp {} seed {} smac gap {} def gap {}".format(name,imp,rand_seed,mip_gap,def_gap))
-      if reward_type == "time":
-        print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
-      else:
-        print("\n reward_type: \t {} ".format(reward_type))
-        print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
-       
-      scores.append(imp)
+      try:
+          runtime, mip_gap,status = solve_instance(name, def_runtime,rand_seed,lambda1, lambda2, lambda3, lambda4,root = True)
+          if status == "timelimit": # if hit the default time limit then compare gap
+            if mip_gap < gap_tolerance:   #solved to optimality in default runtime --> good confugration
+              imp = -0.1
+              reward_type = "time_limit_default"
+            else:       # did not solve to optimality
+                  imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
+                  imp = -1*imp
+                  reward_type = "gap"
+
+          if status == "optimal":   # SMAC solved to optimality
+            if def_status == "optimal":    # default solved to optimality as well
+                  imp = float((def_runtime - runtime)) / (np.abs(def_runtime) + 1e-8)
+                  imp = -1*imp
+                  reward_type = "time"
+            else:  # smac solved to optimality while default did not --> set to large negative value
+              imp = -1 + 1e-18
+              reward_type = "smac_opt_def_not"
+          if status == "nodelimit":
+                  imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
+                  imp = -1*imp
+                  reward_type = "gap"
+
+          if imp >= 0:
+            imp = -np.log(np.abs(imp+1))
+          else:
+            imp = np.log(np.abs(imp-1))
+          if reward_type == "gap":
+            print("\n name {} gap imp {} seed {} smac gap {} def gap {}".format(name,imp,rand_seed,mip_gap,def_gap))
+          if reward_type == "time":
+            print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
+          else:
+            print("\n reward_type: \t {} ".format(reward_type))
+            print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
+
+          scores.append(imp)
+      except:
+          pass
   print("Done 1 SMAC evaluation")
   return np.mean(scores)
 
@@ -180,42 +183,46 @@ def evaluation(params, df, n_samples = 5, gap_tolerance = 0.0002, epsilon = 1e-8
     name = df_sample['NAME'].tolist()[j]
 
     for rand_seed in [1,2,3]:
-      runtime, mip_gap,status = solve_instance(name, def_runtime,rand_seed,lambda1, lambda2, lambda3, lambda4,root = True)
-      if status == "timelimit": # if hit the default time limit then compare gap
-        if mip_gap < gap_tolerance:   #solved to optimality in default runtime --> good confugration
-          imp = -0.1
-          reward_type = "time_limit_default"
-        else:       # did not solve to optimality
-              imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
-              imp = -1*imp
-              reward_type = "gap"
-              
-      if status == "optimal":   # SMAC solved to optimality
-        if def_status == "optimal":    # default solved to optimality as well
-              imp = float((def_runtime - runtime)) / (np.abs(def_runtime) + 1e-8)
-              imp = -1*imp
-              reward_type = "time"
-        else:  # smac solved to optimality while default did not --> set to large negative value
-          imp = -1 + 1e-18
-          reward_type = "smac_opt_def_not"
-      if status == "nodelimit":
-              imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
-              imp = -1*imp
-              reward_type = "gap"
       
-      if imp >= 0:
-        imp = -np.log(np.abs(imp+1))
-      else:
-        imp = np.log(np.abs(imp-1))
-      if reward_type == "gap":
-        print("\n name {} gap imp {} seed {} smac gap {} def gap {}".format(name,imp,rand_seed,mip_gap,def_gap))
-      if reward_type == "time":
-        print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
-      else:
-        print("\n reward_type: \t {} ".format(reward_type))
-        print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
-       
-      scores.append(imp)
+      try:
+          runtime, mip_gap,status = solve_instance(name, def_runtime,rand_seed,lambda1, lambda2, lambda3, lambda4,root = True)
+          if status == "timelimit": # if hit the default time limit then compare gap
+            if mip_gap < gap_tolerance:   #solved to optimality in default runtime --> good confugration
+              imp = -0.1
+              reward_type = "time_limit_default"
+            else:       # did not solve to optimality
+                  imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
+                  imp = -1*imp
+                  reward_type = "gap"
+
+          if status == "optimal":   # SMAC solved to optimality
+            if def_status == "optimal":    # default solved to optimality as well
+                  imp = float((def_runtime - runtime)) / (np.abs(def_runtime) + 1e-8)
+                  imp = -1*imp
+                  reward_type = "time"
+            else:  # smac solved to optimality while default did not --> set to large negative value
+              imp = -1 + 1e-18
+              reward_type = "smac_opt_def_not"
+          if status == "nodelimit":
+                  imp = float((def_gap - mip_gap)) / (np.abs(def_gap) + 1e-8)
+                  imp = -1*imp
+                  reward_type = "gap"
+
+          if imp >= 0:
+            imp = -np.log(np.abs(imp+1))
+          else:
+            imp = np.log(np.abs(imp-1))
+          if reward_type == "gap":
+            print("\n name {} gap imp {} seed {} smac gap {} def gap {}".format(name,imp,rand_seed,mip_gap,def_gap))
+          if reward_type == "time":
+            print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
+          else:
+            print("\n reward_type: \t {} ".format(reward_type))
+            print("\n name {} time imp {} seed {} smac time {} def time {}".format(name,imp,rand_seed,runtime,def_runtime))
+
+          scores.append(imp)
+      except:
+        pass
   print("Done 1 SMAC evaluation")
   return np.mean(scores)
 
