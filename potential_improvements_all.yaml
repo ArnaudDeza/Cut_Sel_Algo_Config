@@ -1,0 +1,14 @@
+bienst1:
+  improvement: 0.802743903415794
+  parameters:
+  - - 0.4
+    - 0.2
+    - 0.3
+    - 0.1
+bienst2:
+  improvement: 0.7700873450396957
+  parameters:
+  - - 0.3
+    - 0.2
+    - 0.2
+    - 0.3
